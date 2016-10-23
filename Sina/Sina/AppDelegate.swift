@@ -15,6 +15,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+        NJLog("abc")
         // Override point for customization after application launch.
         return true
     }
@@ -43,4 +44,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
 }
-
+func NJLog<T>(message: T, fileName: String = #file, methodName: String = #function, lineNumber: Int = #line)
+{
+    //    if flag
+    //    {
+    
+    #if DEBUG
+        //    print("\((fileName as NSString).pathComponents.last!).\(methodName)[\(lineNumber)]:\(message)")
+        print("\(methodName)[\(lineNumber)]:\(message)")
+    #endif
+    //    }
+}
