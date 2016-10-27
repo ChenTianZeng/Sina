@@ -1,3 +1,4 @@
+
 //
 //  AppDelegate.swift
 //  Sina
@@ -10,48 +11,95 @@ import UIKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
     var window: UIWindow?
-
-
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-        NJLog("abc")
-        // Override point for customization after application launch.
+        UINavigationBar.appearance().tintColor=UIColor.orangeColor()
+        UITabBar.appearance().tintColor = UIColor.orangeColor()
+        // 2.注册监听
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(AppDelegate.changeRootViewController(_:)), name: SwitchRootViewController, object: nil)
+
+        window = UIWindow(frame: UIScreen.mainScreen().bounds)
+        window?.backgroundColor = UIColor.whiteColor()
+        window?.rootViewController = defaultViewController()
+        window?.makeKeyAndVisible()
+        
         return true
     }
-
-    func applicationWillResignActive(application: UIApplication) {
-        // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-        // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
+    deinit
+    {
+        NSNotificationCenter.defaultCenter().removeObserver(self)
     }
 
-    func applicationDidEnterBackground(application: UIApplication) {
-        // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
-        // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+}
+extension AppDelegate
+{
+/// 切换根控制器
+func changeRootViewController(notice: NSNotification)
+{
+    if notice.object as! Bool
+    {
+        let sb = UIStoryboard(name: "Main", bundle: nil)
+        window?.rootViewController = sb.instantiateInitialViewController()!
+    }else
+    {
+        let sb = UIStoryboard(name: "welcome", bundle: nil)
+        window?.rootViewController = sb.instantiateInitialViewController()!
     }
+}
 
-    func applicationWillEnterForeground(application: UIApplication) {
-        // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
+/// 用于返回默认界面
+private func defaultViewController() -> UIViewController
+{
+    // 1.判断是否登录
+    if UserAccount.isLogin()
+    {
+        // 2.判断是否有新版本
+        if isNewVersion()
+        {
+            let sb = UIStoryboard(name: "Newfeature", bundle: nil)
+            return sb.instantiateInitialViewController()!
+        }else
+        {
+            let sb = UIStoryboard(name: "welcome", bundle: nil)
+            return sb.instantiateInitialViewController()!
+        }
     }
+    
+    // 没有登录
+    let sb = UIStoryboard(name: "Main", bundle: nil)
+    return sb.instantiateInitialViewController()!
+}
 
-    func applicationDidBecomeActive(application: UIApplication) {
-        // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+/// 判断是否有新版本
+private func isNewVersion() -> Bool
+{
+    // 1.加载info.plist
+    // 2.获取当前软件的版本号
+    let currentVersion = NSBundle.mainBundle().infoDictionary!["CFBundleShortVersionString"] as! String
+    // 3.获取以前的软件版本号?
+    let defaults = NSUserDefaults.standardUserDefaults()
+    let sanboxVersion = (defaults.objectForKey("xxoo") as? String) ?? "0.0"
+    // 4.用当前的版本号和以前的版本号进行比较
+    // 1.0  0.0
+    if currentVersion.compare(sanboxVersion) == NSComparisonResult.OrderedDescending
+    {
+        // 如果当前的大于以前的, 有新版本
+        NJLog("有新版本")
+        // 如果有新版本, 就利用新版本的版本号更新本地的版本号
+        defaults.setObject(currentVersion, forKey: "xxoo")
+        defaults.synchronize() // iOS7以前需要写, iOS7以后不用写
+        return true
     }
-
-    func applicationWillTerminate(application: UIApplication) {
-        // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
-    }
-
-
+    NJLog("没有新版本")
+    return false
+}
 }
 func NJLog<T>(message: T, fileName: String = #file, methodName: String = #function, lineNumber: Int = #line)
 {
-    //    if flag
-    //    {
+ 
     
     #if DEBUG
-        //    print("\((fileName as NSString).pathComponents.last!).\(methodName)[\(lineNumber)]:\(message)")
         print("\(methodName)[\(lineNumber)]:\(message)")
     #endif
-    //    }
+   
 }

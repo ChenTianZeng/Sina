@@ -1,5 +1,10 @@
 platform :ios,"8.0"
 target 'Sina' do
+pod 'SnapKit','~>0.22.0'
+pod 'AFNetworking'
+pod 'SVProgressHUD'
+pod 'SDWebImage'
+
 use_frameworks!
 end
 
